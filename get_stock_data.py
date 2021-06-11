@@ -29,8 +29,8 @@ class StockData:
 
 def main():
     stock_data = StockData()
-    start = datetime.datetime(2020, 1, 13)
-    end = datetime.datetime(2021, 1, 12)
+    start = datetime.datetime(2008, 1, 1)
+    end = datetime.datetime(2021, 1, 31)
     stock_name = 'AAPL'
     stock_data.get_stock_data(stock_name, start=start, end=end)
 

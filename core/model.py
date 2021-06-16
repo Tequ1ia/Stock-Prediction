@@ -23,6 +23,7 @@ class Model:
         self.model.add(Dropout(0.2))
         self.model.add(Dense(1, activation='linear'))
         self.model.compile(loss='mse', optimizer='adam')
+        self.model.summary()
         print('[Model] Model Compiled')
 
     def train(self, x, y, epochs, batch_size, save_dir):
@@ -43,17 +44,17 @@ class Model:
         predicted = np.reshape(predicted, (predicted.size,))
         return predicted
 
-    def predict_sequence_multiple(self, data, window_size, prediction_len):
-        prediction_seqs = []
-        for i in range(int(len(data) / prediction_len)):
-            curr_frame = data[i * prediction_len]
-            predicted = []
-            for j in range(prediction_len):
-                predicted.append(self.model.predict(curr_frame[np.newaxis, :, :])[0, 0])
-                curr_frame = curr_frame[1:]
-                curr_frame = np.insert(curr_frame, [window_size - 2], predicted[-1], axis=0)
-            prediction_seqs.append(predicted)
-        return prediction_seqs
+    # def predict_sequence_multiple(self, data, window_size, prediction_len):
+    #     prediction_seqs = []
+    #     for i in range(int(len(data) / prediction_len)):
+    #         curr_frame = data[i * prediction_len]
+    #         predicted = []
+    #         for j in range(prediction_len):
+    #             predicted.append(self.model.predict(curr_frame[np.newaxis, :, :])[0, 0])
+    #             curr_frame = curr_frame[1:]
+    #             curr_frame = np.insert(curr_frame, [window_size - 2], predicted[-1], axis=0)
+    #         prediction_seqs.append(predicted)
+    #     return prediction_seqs
 
     def iterative_predict(self, data, iteration_len):
         '''

@@ -20,8 +20,6 @@ class DataProcessor:
         feature_df = df.get(feature_cols)
         label_df = df.get(label_col)
 
-        self.window_len = 0
-
         self.feature_dfs = []
         self.label_dfs = []
         for i in range(len(feature_df) // day_num):
@@ -41,10 +39,9 @@ class DataProcessor:
     def get_train_data(self, window_len):
         train_x = []
         train_y = []
-
-        for i in range(len(self.feature_dfs)):
-            for j in range(self.train_len - window_len):
-                feature_window = (self.feature_dfs[i].values)[j: j + window_len + 1]
+        for i in range(self.train_len - window_len):
+            for j in range(len(self.feature_dfs)):
+                feature_window = (self.feature_dfs[j].values)[i: i + window_len + 1]
                 feature_window = normalise_window(feature_window)
                 # label_window = self.label_data[i + window_len + 1]
                 # label_window = normalise_window(label_window)
@@ -52,51 +49,24 @@ class DataProcessor:
                 train_y.append(feature_window[-1, 0])
         return np.array(train_x), np.array(train_y)
 
-
     def get_test_data(self, window_len):
         test_x = []
         test_y = []
+        for i in range(self.test_len - window_len - 1):
+            feature_window = (self.feature_dfs.values)[i + self.train_len: i + self.train_len + window_len + 1]
+            feature_window = normalise_window(feature_window)
+            # label_window = self.label_data[i + self.train_len + window_len + 1]
+            # label_window = normalise_window(label_window)
 
-        for i in range(len(self.feature_dfs)):
-            for j in range(self.test_len - window_len - 1):
-                feature_window = (self.feature_dfs[i].values)[j + self.train_len: j + self.train_len + window_len + 1]
-                feature_window = normalise_window(feature_window)
-                # label_window = self.label_data[i + self.train_len + window_len + 1]
-                # label_window = normalise_window(label_window)
-
-                test_x.append(feature_window[:-1])
-                test_y.append(feature_window[-1, 0])
-
-        self.window_len = window_len
-
-        # # 把最后一个窗口加入到test数据集中（没有对应的真实价格）
-        # feature_window = (self.feature_dfs.values)[-window_len:]
-        # feature_window = normalise_window(feature_window)
-        # label = None
-        # test_x.append(feature_window)
-        # test_y.append(label)
+            test_x.append(feature_window[:-1])
+            test_y.append(feature_window[-1, 0])
+        # 把最后一个窗口加入到test数据集中（没有对应的真实价格）
+        feature_window = (self.feature_dfs.values)[-window_len:]
+        feature_window = normalise_window(feature_window)
+        label = None
+        test_x.append(feature_window)
+        test_y.append(label)
         return np.array(test_x), np.array(test_y)
-
-    def denormalise_predicted(self, predicted):
-        denormalisd = []
-        p0 = []
-        for df in self.label_dfs:
-            p0.append((df.values)[self.train_len: self.data_len - self.window_len - 1])
-        p0 = [j for i in p0 for j in i]
-        for i, normal in enumerate(predicted):
-            denormalisd.append((normal + 1) * p0[i])
-        return denormalisd
-
-    def get_origin_price(self):
-        origin_price = []
-        for df in self.label_dfs:
-            origin_price.append((df.values)[self.train_len + self.window_len + 1:])
-        origin_price = [j for i in origin_price for j in i]
-        return origin_price
-
-    def f1(self):
-        feature_window = (self.feature_dfs[0].values)[: 20 + 1]
-        print(feature_window)
 
 # dp = DataProcessor('/home/tequlia/code/Stock-Prediction/data/data银行20192020.csv',['close', 'vol'], ['close'], 487, 0.85)
 # dp.append_index_data('/home/tequlia/code/Stock-Prediction/data/datahs300.csv', ['close'])
